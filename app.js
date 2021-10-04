@@ -1,3 +1,6 @@
+const mongoose = require('mongoose');
+mongoose.connect(process.env.DATABASE_URL || 'mongodb://localhost/your-app-name');
+
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
