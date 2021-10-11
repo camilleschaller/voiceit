@@ -8,8 +8,8 @@ usersRouter.get('/', function(req, res, next) {
 });
 
 /* POST users creating. */
-usersRouter.post('/', function(req, res, next) {
-  res.send(UserController.createUser("ophel", "password", "ophelie.baur@heig-vd.ch"));
+usersRouter.post('/:pseudo/:password/:mail', function(req, res, next) {
+  res.send(UserController.createUser(pseudo, password, mail));
 });
 
 /* PUT users modifying. */
