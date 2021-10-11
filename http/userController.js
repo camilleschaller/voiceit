@@ -1,9 +1,5 @@
-function createUser(pseudo, password, mail){
-    db.user.insert({
-        "pseudo": pseudo,
-        "password": password,
-        "mail": mail,
-    })
+exports.createUser = function (pseudo, password, mail){
+
 }
 
 function listUser(){
