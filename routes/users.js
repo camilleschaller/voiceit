@@ -1,23 +1,24 @@
+import UserController from "/userController";
 var express = require('express');
 var usersRouter = express.Router();
 
 /* GET users listing. */
-usersRouter.get('/getUser', function(req, res, next) {
+usersRouter.get('/', function(req, res, next) {
   res.send('respond with a resource');
 });
 
 /* POST users creating. */
-usersRouter.post('/createUser', function(req, res, next) {
-  res.send('respond with a resource');
+usersRouter.post('/', function(req, res, next) {
+  res.send(UserController.createUser("ophel", "password", "ophelie.baur@heig-vd.ch"));
 });
 
 /* PUT users modifying. */
-usersRouter.put('/modifyUser', function(req, res, next) {
+usersRouter.put('/', function(req, res, next) {
   res.send('respond with a resource');
 });
 
 /* DELETE users deleting. */
-usersRouter.delete('/deleteUser', function(req, res, next) {
+usersRouter.delete('/', function(req, res, next) {
   res.send('respond with a resource');
 });
 
