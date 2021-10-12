@@ -1,5 +1,7 @@
+const config = require('./config.js');
+
 const mongoose = require('mongoose');
-mongoose.connect(process.env.DATABASE_URL || 'mongodb://localhost/your-app-name');
+mongoose.connect(config.databaseUrl);
 
 var createError = require('http-errors');
 var express = require('express');
