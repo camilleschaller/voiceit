@@ -15,4 +15,15 @@ const user = new Schema({
     type: String,
     required: true
   }
+
 });
+
+userSchema.set('toJSON', {
+  transform: transformJsonUser
+});
+
+function transformJsonUser(doc, json, options) {
+ // Remove the hashed password from the generated JSON.
+ delete json.password;
+ return json;
+}

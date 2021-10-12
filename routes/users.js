@@ -1,6 +1,7 @@
 var UserController = require('../http/userController');
-var express = require('express');
-var usersRouter = express.Router();
+const express = require('express');
+const bcrypt = require('bcrypt');
+const usersRouter = express.Router();
 
 const config = require('../config');
 const debug = require('debug')('demo:movies');
@@ -24,7 +25,7 @@ usersRouter.post('/', function(req, res, next) {
 
     debug(`Created user "${savedUser.pseudo}"`);
 
-    //Vérifier ce code ci dessous.
+    //Vérifier ce code ci dessous. (password, slide 11 de Express autentification)
     res
       .status(201)
       .set('Location', `${config.baseUrl}/api/users/${savedUser._id}`)
