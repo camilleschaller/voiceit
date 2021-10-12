@@ -1,0 +1,308 @@
+openapi: "3.0.3"
+
+info:
+  title: API REST VoiceIt
+  description: >-
+    This API allows you to create new notes by recording your voice and transcribe it.
+    Each note is part of a subject that includes multiple notes.
+  version: 1.0.0
+  contact:
+    url: https://github.com/camilleschaller/voiceit
+
+servers:
+  - url: https://projet-voiceit.herokuapp.com
+
+paths:
+  /users:
+    get:
+      summary: List users.
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/pageSize'
+      responses:
+        200:
+          headers:
+            Link:
+              $ref: '#/components/headers/PaginationLink'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Person'
+    post:
+      summary: Create a user.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PersonInRequestBody'
+      responses:
+        201:
+          description: The person was successfully created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+        422:
+          $ref: '#/components/responses/PersonValidationError'
+  /subjects:
+    get:
+      summary: List subjects.
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/pageSize'
+      responses:
+        200:
+          headers:
+            Link:
+              $ref: '#/components/headers/PaginationLink'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Person'
+    post:
+      summary: Create a subject.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PersonInRequestBody'
+      responses:
+        201:
+          description: The person was successfully created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+        422:
+          $ref: '#/components/responses/PersonValidationError'
+  /notes:
+    get:
+      summary: List notes.
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/pageSize'
+      responses:
+        200:
+          headers:
+            Link:
+              $ref: '#/components/headers/PaginationLink'
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Person'
+    post:
+      summary: Create a note.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PersonInRequestBody'
+      responses:
+        201:
+          description: The person was successfully created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+        422:
+          $ref: '#/components/responses/PersonValidationError'
+
+components:
+  headers:
+    PaginationLink:
+      description: Links to the first, previous, next and last pages of the collection (if applicable).
+      schema:
+        type: string
+      example: >-
+        <https://comem-rest-demo.herokuapp.com/api/people?page=1&pageSize=50>; rel="first prev"
+  parameters:
+    page:
+      name: page
+      in: query
+      schema:
+        type: integer
+        min: 1
+      example: 1
+    pageSize:
+      name: pageSize
+      in: query
+      schema:
+        type: integer
+        min: 1
+        max: 100
+      example: 25
+  responses:
+    PersonNotFoundError:
+      description: The person does not exist.
+      content:
+        text/plain: No person found with ID 58b2926f5e1def0123e97bc0.
+    PersonValidationError:
+      description: The person is invalid.
+      content:
+        application/json:
+          example: |-
+            {
+              "message": "Person validation failed",
+              "errors": {
+                "gender": {
+                  "kind": "enum",
+                  "message": "`foo` is not a valid enum value for path `gender`.",
+                  "name": "ValidatorError",
+                  "path": "gender",
+                  "properties": {
+                    "enumValues": [
+                      "male",
+                      "female",
+                      "other"
+                    ],
+                    "message": "`{VALUE}` is not a valid enum value for path `{PATH}`.",
+                    "path": "gender",
+                    "type": "enum",
+                    "value": "foo"
+                  },
+                  "value": "foo"
+                }
+              }
+            }
+  schemas:
+    User:
+      type: object
+      properties:
+        pseudo:
+          type: string
+          description: The pseudo of the user (must be unique).
+          minlength: 3
+          maxlength: 30
+          example: JohnDoe
+        password:
+          type: string
+          description: The password of the user.
+          example: 'passwordtest'
+          format: password
+        mail:
+          type: integer
+          description: The email address of the user. MUST be in the format of an email address.
+          example: mail@exemple.com
+      required:
+        - pseudo
+        - password
+        - mail
+      additionalProperties: false
+    Subject:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The name of the person (must be unique).
+          minlength: 3
+          maxlength: 30
+          example: John Doe
+        gender:
+          type: string
+          description: The gender of the person.
+          enum:
+            - male
+            - female
+            - other
+          example: male
+        birthDate:
+          type: string
+          description: >-
+            The birth date of the person
+            ([ISO-8601](https://en.wikipedia.org/wiki/ISO_8601) format).
+          format: date-time
+          example: '2001-02-03T08:30:00.000Z'
+      required:
+        - name
+        - gender
+      additionalProperties: false
+          Note:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The name of the person (must be unique).
+          minlength: 3
+          maxlength: 30
+          example: John Doe
+        gender:
+          type: string
+          description: The gender of the person.
+          enum:
+            - male
+            - female
+            - other
+          example: male
+        birthDate:
+          type: string
+          description: >-
+            The birth date of the person
+            ([ISO-8601](https://en.wikipedia.org/wiki/ISO_8601) format).
+          format: date-time
+          example: '2001-02-03T08:30:00.000Z'
+      required:
+        - name
+        - gender
+      additionalProperties: false
+    Note:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The name of the person (must be unique).
+          minlength: 3
+          maxlength: 30
+          example: John Doe
+        gender:
+          type: string
+          description: The gender of the person.
+          enum:
+            - male
+            - female
+            - other
+          example: male
+        birthDate:
+          type: string
+          description: >-
+            The birth date of the person
+            ([ISO-8601](https://en.wikipedia.org/wiki/ISO_8601) format).
+          format: date-time
+          example: '2001-02-03T08:30:00.000Z'
+      required:
+        - name
+        - gender
+      additionalProperties: false
+          Note:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The name of the person (must be unique).
+          minlength: 3
+          maxlength: 30
+          example: John Doe
+        gender:
+          type: string
+          description: The gender of the person.
+          enum:
+            - male
+            - female
+            - other
+          example: male
+        birthDate:
+          type: string
+          description: >-
+            The birth date of the person
+            ([ISO-8601](https://en.wikipedia.org/wiki/ISO_8601) format).
+          format: date-time
+          example: '2001-02-03T08:30:00.000Z'
+      required:
+        - name
+        - gender
+      additionalProperties: false
