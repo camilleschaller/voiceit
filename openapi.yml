@@ -17,8 +17,6 @@ paths:
     get:
       summary: List users.
       parameters:
-        - $ref: '#/components/parameters/page'
-        - $ref: '#/components/parameters/pageSize'
       responses:
         200:
           headers:
@@ -29,23 +27,38 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Person'
+                  $ref: '#/components/schemas/User'
     post:
-      summary: Create a user.
+      summary: Create a new user
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PersonInRequestBody'
+              $ref: '#/components/schemas/UserInRequestBody'
       responses:
         201:
           description: The person was successfully created.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Person'
+                $ref: '#/components/schemas/User'
         422:
-          $ref: '#/components/responses/PersonValidationError'
+          $ref: '#/components/responses/UserValidationError'
+    delete:
+      summary: Delete a user.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserInRequestBody'
+      responses:
+        201:
+          description: The User was successfully deleted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
   /subjects:
     get:
       summary: List subjects.
@@ -69,7 +82,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PersonInRequestBody'
+              $ref: '#/components/schemas/UserInRequestBody'
       responses:
         201:
           description: The person was successfully created.
@@ -78,7 +91,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Person'
         422:
-          $ref: '#/components/responses/PersonValidationError'
+          $ref: '#/components/responses/UserValidationError'
   /notes:
     get:
       summary: List notes.
@@ -95,23 +108,21 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Person'
+                  $ref: '#/components/schemas/Note'
     post:
-      summary: Create a note.
+      summary: Create a new note.
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PersonInRequestBody'
+              $ref: '#/components/schemas/UserInRequestBody'
       responses:
         201:
-          description: The person was successfully created.
+          description: The Note was successfully created.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Person'
-        422:
-          $ref: '#/components/responses/PersonValidationError'
+                $ref: '#/components/schemas/Note'
 
 components:
   headers:
@@ -135,38 +146,34 @@ components:
       schema:
         type: integer
         min: 1
-        max: 100
-      example: 25
+        max: 10
+      example: 7
   responses:
-    PersonNotFoundError:
-      description: The person does not exist.
+    UserNotFoundError:
+      description: The user does not exist.
       content:
-        text/plain: No person found with ID 58b2926f5e1def0123e97bc0.
-    PersonValidationError:
-      description: The person is invalid.
+        text/plain: No user found with ID 58b2926f5e1def0123e97bc0.
+    UserValidationError:
+      description: The user is invalid.
       content:
         application/json:
           example: |-
             {
-              "message": "Person validation failed",
+              "message": "User validation failed",
               "errors": {
-                "gender": {
-                  "kind": "enum",
-                  "message": "`foo` is not a valid enum value for path `gender`.",
+                "email": {
+                  "kind": "format",
+                  "message": "`exemple.ch` is not a valid format value for path `email`.",
                   "name": "ValidatorError",
-                  "path": "gender",
+                  "path": "mail",
                   "properties": {
-                    "enumValues": [
-                      "male",
-                      "female",
-                      "other"
-                    ],
-                    "message": "`{VALUE}` is not a valid enum value for path `{PATH}`.",
-                    "path": "gender",
-                    "type": "enum",
-                    "value": "foo"
+                    "format": "email",
+                    "message": "`{VALUE}` is not a valid format value for path `{PATH}`.",
+                    "path": "mail",
+                    "type": "format",
+                    "value": "exemple.ch"
                   },
-                  "value": "foo"
+                  "value": "exemple.ch"
                 }
               }
             }
@@ -184,11 +191,11 @@ components:
           type: string
           description: The password of the user.
           example: 'passwordtest'
-          format: password
         mail:
-          type: integer
+          type: string
           description: The email address of the user. MUST be in the format of an email address.
           example: mail@exemple.com
+          format: email
       required:
         - pseudo
         - password
