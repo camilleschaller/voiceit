@@ -3,12 +3,13 @@ const user = require('../models/userSchema');
 const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
 const ObjectId = mongoose.Types.ObjectId;
+const config = require('../config.js');
+const jwt = require('jsonwebtoken');
 
 exports.createUser = function (req, res, next) {
     const plainPassword = req.body.password;
-    const costFactor = 10;
 
-    bcrypt.hash(plainPassword, costFactor, function (err, hashedPassword) {
+    bcrypt.hash(plainPassword, config.bcryptCostFactor, function (err, hashedPassword) {
         if (err) {
             return next(err);
         }
@@ -21,7 +22,6 @@ exports.createUser = function (req, res, next) {
 
             debug(`Created user "${savedUser.pseudo}"`);
 
-            //Vérifier ce code ci dessous. (password, slide 11 de Express autentification)
             res
                 .status(201)
                 //.set('Location', `${config.baseUrl}/api/users/${savedUser._id}`)
@@ -36,28 +36,26 @@ exports.listUser = function (req, res, next) {
 }
 
 exports.modifyUser = function (req, res, next) {
-    // Update all properties (regardless of whether they are in the request body or not)
     req.user.pseudo = req.body.pseudo;
     req.user.password = req.body.password;
     req.user.mail = req.body.mail;
 
     const plainPassword = req.body.password;
-    const costFactor = 10;
 
-    bcrypt.hash(plainPassword, costFactor, function (err, hashedPassword) {
+    bcrypt.hash(plainPassword, config.bcryptCostFactor, function (err, hashedPassword) {
         if (err) {
             return next(err);
         }
-    const userModified = req.user;
-    userModified.password = hashedPassword;
-    userModified.save(function (err, savedUser) {
-        if (err) {
-            return next(err);
-        }
-        debug(`Updated user "${savedUser.pseudo}"`);
-        res.send(savedUser);
-    });
-})
+        const userModified = req.user;
+        userModified.password = hashedPassword;
+        userModified.save(function (err, savedUser) {
+            if (err) {
+                return next(err);
+            }
+            debug(`Updated user "${savedUser.pseudo}"`);
+            res.send(savedUser);
+        });
+    })
 }
 
 exports.deleteUser = function (req, res, next) {
@@ -86,7 +84,29 @@ exports.loadUserFromParamsMiddleware = function (req, res, next) {
     });
 }
 
-
 function userNotFound(res, userId) {
     return res.status(404).type('text').send(`No user found with ID ${userId}`);
+}
+
+exports.login = function (req, res, next) {
+    user.findOne({ pseudo: req.body.pseudo }).exec(function (err, user) {
+        if (err) {
+            return next(err);
+        } else if (!user) {
+            return res.sendStatus(401);
+        }
+        bcrypt.compare(req.body.password, user.password, function (err, valid) {
+            if (err) {
+                return next(err);
+            } else if (!valid) {
+                return res.sendStatus(401);
+            }
+            const exp = Math.floor(Date.now() / 100) + 7 * 24 * 3600;
+            const payload = { sub: user._id.toString(), exp: exp };
+            jwt.sign(payload, config.secretKey, function (err, token) {
+                if (err) { return next(err); }
+                res.send({ token: token });
+            });
+        });
+    })
 }

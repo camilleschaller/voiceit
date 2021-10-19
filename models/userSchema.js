@@ -14,7 +14,7 @@ const userSchema = new Schema({
       // rather than a MongoDB duplicate key error
       [{
         validator: validateUserPseudoUniqueness,
-        message:'User {VALUE} already exists'
+        message: 'User {VALUE} already exists'
       }],
   },
   password: {
@@ -35,16 +35,16 @@ userSchema.set('toJSON', {
  * Given a pseudo, calls the callback function with true if no user exists with that name
  * (or the only user that exists is the same as the user being validated).
  */
- function validateUserPseudoUniqueness(value) {
+function validateUserPseudoUniqueness(value) {
   return this.constructor.findOne().where('pseudo').equals(value).exec().then((existingUser) => {
     return !existingUser || existingUser._id.equals(this._id);
   });
 }
 
 function transformJsonUser(doc, json, options) {
- //Remove the hashed password from the generated JSON.
- //delete json.password;
-return json;
+  //Remove the hashed password from the generated JSON.
+  //delete json.password;
+  return json;
 }
 
 module.exports = mongoose.model('user', userSchema);
