@@ -1,12 +1,10 @@
 var UserController = require('../http/userController');
 const express = require('express');
-//const bcrypt = require('bcrypt');
 const usersRouter = express.Router();
 
 //const config = require('../config');
-const debug = require('debug')('demo:movies');
+
 const mongoose =require('mongoose');
-const user = require('../models/userSchema');
 const ObjectId =mongoose.Types.ObjectId;
 //const utils = require('./utils');
 
@@ -16,25 +14,7 @@ usersRouter.get('/', function(req, res, next) {
 });
 
 /* POST users creating. */
-usersRouter.post('/', function(req, res, next) {
-  new user(req.body).save(function (err, savedUser) {
-    if (err) {
-      return next(err);
-    }
-
-    debug(`Created user "${savedUser.pseudo}"`);
-
-    //Vérifier ce code ci dessous. (password, slide 11 de Express autentification)
-    res
-      .status(201)
-      //.set('Location', `${config.baseUrl}/api/users/${savedUser._id}`)
-      .set('Location', `${'localhost:3000'}/api/users/${savedUser._id}`)
-      .send(savedUser);
-  });  
-
-  
-  //res.send(UserController.createUser(req.body));
-});
+usersRouter.post('/', UserController.createUser);
 
 /* PUT users modifying. */
 usersRouter.put('/', function(req, res, next) {
