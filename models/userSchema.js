@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const ObjectId = mongoose.Types.ObjectId;
 const Schema = mongoose.Schema;
+const validator = require('validator');
 
 const userSchema = new Schema({
   pseudo: {
@@ -24,6 +25,11 @@ const userSchema = new Schema({
   mail: {
     type: String,
     required: true,
+    validate:{
+      validator: validator.isEmail,
+      message: '{VALUE} is not a valid email',
+      isAsync: false
+    }
   }
 });
 
