@@ -38,7 +38,7 @@ userSchema.set('toJSON', {
 });
 
 /**
- * Given a pseudo, calls the callback function with true if no user exists with that name
+ * Given a pseudo, calls the callback function with true if no user exists with that pseudo
  * (or the only user that exists is the same as the user being validated).
  */
 function validateUserPseudoUniqueness(value) {
