@@ -14,6 +14,8 @@ var usersRouter = require('./routes/users');
 var subjectsRouter = require('./routes/subjects');
 var notesRouter = require('./routes/notes');
 
+
+
 var app = express();
 
 // view engine setup
@@ -47,12 +49,13 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
+
 //openAPI 
 const fs = require('fs');
 const yaml = require('js-yaml');
 const swaggerUi = require('swagger-ui-express');
 // Parse the OpenAPI document.
-const openApiDocument = yaml.safeLoad(fs.readFileSync('./openapi.yml'));
+const openApiDocument = yaml.load(fs.readFileSync('./openapi.yml'));
 // Serve the Swagger UI documentation.
 app.use('/swagger', swaggerUi.serve, swaggerUi.setup(openApiDocument));
 
