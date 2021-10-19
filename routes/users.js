@@ -1,5 +1,6 @@
 var UserController = require('../http/userController');
 const express = require('express');
+const utils = require('../utils.js');
 const usersRouter = express.Router();
 
 //const config = require('../config');
@@ -9,22 +10,16 @@ const ObjectId =mongoose.Types.ObjectId;
 //const utils = require('./utils');
 
 /* GET users listing. */
-usersRouter.get('/', function(req, res, next) {
-  res.send('respond with a resource');
-});
+usersRouter.get('/:id', UserController.loadUserFromParamsMiddleware, UserController.listUser);
 
 /* POST users creating. */
 usersRouter.post('/', UserController.createUser);
 
 /* PUT users modifying. */
-usersRouter.put('/', function(req, res, next) {
-  res.send('respond with a resource');
-});
+usersRouter.put('/:id', utils.requireJson, UserController.loadUserFromParamsMiddleware, UserController.modifyUser);
 
 /* DELETE users deleting. */
-usersRouter.delete('/', function(req, res, next) {
-  res.send('respond with a resource');
-});
+usersRouter.delete('/:id', UserController.loadUserFromParamsMiddleware, UserController.deleteUser);
 
 /* POST login users 
 usersRouter.post('/login', function(req, res, next) {
