@@ -40,7 +40,7 @@ exports.modifySubject = function (req, res, next) {
             if (err) {
                 return next(err);
             }
-            debug(`Updated subject "${savedSubject.pseudo}"`);
+            debug(`Updated subject "${savedSubject.title}"`);
             res.send(savedSubject);
         });
 }
