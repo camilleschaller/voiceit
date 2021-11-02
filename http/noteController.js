@@ -1,6 +1,8 @@
 const debug = require('debug')('demo:note');
 const note = require('../models/noteSchema');
 const utils = require('../utils.js');
+const subject = require('../models/subjectSchema');
+const user = require('../models/userSchema');
 
 const mongoose = require('mongoose');
 const ObjectId = mongoose.Types.ObjectId;
@@ -37,38 +39,66 @@ exports.createNote = function (req, res, next) {
 }
 
 exports.listNotes = function (req, res, next) {
-    // Count total notes matching the URL query parameters
-    const countQuery = queryNotes(req);
-    countQuery.count(function (err, total) {
 
+    if (!ObjectId.isValid(req.query.subjectId)) {
+        return res.status(422).send({
+            message: 'Subject validation failed: subjectId: subject not found',
+            errors: {
+                subjectId: {
+                    message: 'subject not found',
+                    path: 'subjectId',
+                    value: req.body.subjectId
+                }
+            }
+        });
+
+    }
+
+    subject.findById(req.params.id, function (err, subject) {
         if (err) {
             return next(err);
+        } else if (!subject) {
+            return userNotFound(res, subjectId);
         }
 
-        // Prepare the initial database query from the URL query parameters
-        let query = queryNotes(req);
-
-        // Parse pagination parameters from URL query parameters
-        const { page, pageSize } = utils.getPaginationParameters(req);
-
-        // Apply the pagination to the database query
-        query = query.skip((page - 1) * pageSize).limit(pageSize);
-
-        // Add the Link header to the response
-        utils.addLinkHeader('/api/notes', page, pageSize, total, res);
-
-        // Populate the directorId if indicated in the "include" URL query parameter
-        if (utils.responseShouldInclude(req, 'subject')) {
-            query = query.populate('subjectId');
+        if (req.currentUserId !== thing.user.toString()) {
+            return res.status(403).send('Please mind your own things.')
         }
 
-        // Execute the query
-        query.sort({ title: 1 }).exec(function (err, notes) {
+        // Count total notes matching the URL query parameters
+        const countQuery = queryNotes(req, subject);
+        countQuery.count(function (err, total) {
+
             if (err) {
                 return next(err);
             }
-            res.send(notes);
+
+            // Prepare the initial database query from the URL query parameters
+            let query = queryNotes(req, subject);
+
+            // Parse pagination parameters from URL query parameters
+            const { page, pageSize } = utils.getPaginationParameters(req);
+
+            // Apply the pagination to the database query
+            query = query.skip((page - 1) * pageSize).limit(pageSize);
+
+            // Add the Link header to the response
+            utils.addLinkHeader('/api/notes', page, pageSize, total, res);
+
+            // Populate the directorId if indicated in the "include" URL query parameter
+            if (utils.responseShouldInclude(req, 'subject')) {
+                query = query.populate('subjectId');
+            }
+
+            // Execute the query
+            query.sort({ title: 1 }).exec(function (err, notes) {
+                if (err) {
+                    return next(err);
+                }
+                res.send(notes);
+            });
         });
+
     });
 }
 
@@ -111,16 +141,11 @@ exports.loadNotesFromParamsMiddleware = function (req, res, next) {
 * Returns a Mongoose query that will retrieve movies filtered with the URL query parameters.
 */
 
-function queryNotes(req) {
+function queryNotes(req, subject) {
 
     let query = note.find();
+    query = query.where('subjectId').equals(subject._id);
 
-    if (Array.isArray(req.query.subjectId)) {
-        const subjects = req.query.subjectId.filter(ObjectId.isValid);
-        query = query.where('subjectId').in(subjects);
-    } else if (ObjectId.isValid(req.query.subjectId)) {
-        query = query.where('subjectId').equals(req.query.subjectId);
-    }
     if (!isNaN(req.query.rating)) {
         query = query.where('rating').equals(req.query.rating);
     }

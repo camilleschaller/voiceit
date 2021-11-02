@@ -7,15 +7,15 @@ var subjectsRouter = express.Router();
 const ObjectId = mongoose.Types.ObjectId;
 
 /* GET subjects listing. */
-subjectsRouter.get('/', SubjectController.loadSubjectsFromParamsMiddleware, SubjectController.listSubjects);
+subjectsRouter.get('/', utils.authenticate, SubjectController.loadSubjectsFromParamsMiddleware, SubjectController.listSubjects);
 
 /* POST subjects creating. */
-subjectsRouter.post('/', SubjectController.createSubject);
+subjectsRouter.post('/', utils.authenticate, SubjectController.createSubject);
 
 /* PUT subjects modifying. */
-subjectsRouter.put('/:id', utils.requireJson, SubjectController.loadSubjectsFromParamsMiddleware, SubjectController.modifySubject);
+subjectsRouter.put('/:id', utils.authenticate, utils.requireJson, SubjectController.loadSubjectsFromParamsMiddleware, SubjectController.modifySubject);
 
 /* DELETE subjects deleting. */
-subjectsRouter.delete('/:id', SubjectController.loadSubjectsFromParamsMiddleware, SubjectController.deleteSubject);
+subjectsRouter.delete('/:id', utils.authenticate, SubjectController.loadSubjectsFromParamsMiddleware, SubjectController.deleteSubject);
 
 module.exports = subjectsRouter;

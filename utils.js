@@ -1,6 +1,7 @@
-const config = require('./config.js');
+const { authToken, databaseUrl, secretKey } = require('./config.js');
 
 const formatLinkHeader = require('format-link-header');
+const User = require('./models/userSchema');
 
 exports.requireJson = function (req, res, next) {
     if (req.is('application/json')) {
@@ -78,3 +79,34 @@ exports.responseShouldInclude = function (req, property) {
     // Check whether the property is inside the array
     return propertiesToInclude.indexOf(property) >= 0;
 };
+
+exports.authenticate = function (req, res, next) {
+
+    // Ensure the header is present.
+
+    const authorization = req.get('Authorization');
+
+    if (!authorization) {
+        return res.status(401).send('Authorization header is missing');
+    }
+
+    // Check that the header has the correct format.
+
+    const match = authorization.match(/^Bearer (.+)$/);
+    if (!match) {
+        return res.status(401).send('Authorization header is not a bearer token');
+    }
+
+    // Extract and verify the JWT.
+
+    const token = match[1];
+
+    jwt.verify(token, config.secretKey, function (err, payload) {
+        if (err) {
+            return res.status(401).send('Your token is invalid or has expired');
+        } else {
+            req.currentUserId = payload.sub;
+            next(); // Pass the ID of the authenticated user to the next middleware.
+        }
+    });
+}

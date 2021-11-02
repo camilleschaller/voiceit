@@ -9,6 +9,7 @@ try {
 exports.databaseUrl = process.env.DATABASE_URL || 'mongodb+srv://admin:9FwTpTBCtvSF0Pap@voiceit.j1qml.mongodb.net/db-voiceit?retryWrites=true&w=majority'
 exports.port = process.env.PORT || '3000';
 exports.bcryptCostFactor = 10;
+exports.authToken = process.env.AUTH_TOKEN;
 
 //JWT signing key
 

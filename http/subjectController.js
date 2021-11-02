@@ -5,9 +5,6 @@ const ObjectId = mongoose.Types.ObjectId;
 
 exports.createSubject = function (req, res, next) {
 
-    // BUGFIX: validate ObjectId reference before attempting to save. This is to
-    // avoid a Mongoose issue where casting fails before custom validation can be
-    // applied: https://github.com/Automattic/mongoose/issues/8300
     if (req.body.userId && !ObjectId.isValid(req.body.userId)) {
         return res.status(422).send({
             message: 'User validation failed: userId: user not found',
@@ -21,24 +18,25 @@ exports.createSubject = function (req, res, next) {
         });
     }
 
-        const newSubject = new subject(req.body);
-        newSubject.save(function (err, savedSubject) {
-            if (err) {
-                return next(err);
-            }
-            debug(`Created subject "${savedSubject.title}"`);
+    const newSubject = new subject(req.body);
+    newSubject.save(function (err, savedSubject) {
+        if (err) {
+            return next(err);
+        }
+        debug(`Created subject "${savedSubject.title}"`);
 
-            res
-                .status(201)
-                //.set('Location', `${config.baseUrl}/api/subjects/${savedSubject._id}`)
-                .set('Location', `${'localhost:3000'}/api/subjects/${savedSubject._id}`)
-                .send(savedSubject);
-        });
+        res
+            .status(201)
+            //.set('Location', `${config.baseUrl}/api/subjects/${savedSubject._id}`)
+            .set('Location', `${'localhost:3000'}/api/subjects/${savedSubject._id}`)
+            .send(savedSubject);
+    });
 }
 
 exports.listSubjects = function (req, res, next) {
+
     // Count total subjects matching the URL query parameters
-    const countQuery = querySubjects(req);
+    const countQuery = querySubjects(req, req.currentUserId);
     countQuery.count(function (err, total) {
 
         if (err) {
@@ -46,7 +44,7 @@ exports.listSubjects = function (req, res, next) {
         }
 
         // Prepare the initial database query from the URL query parameters
-        let query = querySubjects(req);
+        let query = querySubjects(req, req.currentUserId);
 
         // Parse pagination parameters from URL query parameters
         const { page, pageSize } = utils.getPaginationParameters(req);
@@ -76,17 +74,17 @@ exports.modifySubject = function (req, res, next) {
     req.subject.title = req.body.title;
     req.subject.description = req.body.description;
 
-        const subjectModified = req.subject;
-        subjectModified.save(function (err, savedSubject) {
+    const subjectModified = req.subject;
+    subjectModified.save(function (err, savedSubject) {
 
-            debug(`Updated subject "${savedSubject.title}"`);
-            res.send(savedSubject);
-        });
+        debug(`Updated subject "${savedSubject.title}"`);
+        res.send(savedSubject);
+    });
 }
 
 exports.deleteSubject = function (req, res, next) {
     req.subject.remove(function (err) {
-        
+
         debug(`Deleted subject "${req.subject.title}"`);
         res.sendStatus(204);
     });
@@ -94,25 +92,20 @@ exports.deleteSubject = function (req, res, next) {
 
 exports.loadSubjectsFromParamsMiddleware = function (req, res, next) {
     subject.find(function (err, subjects) {
-            if (err) {
-                return next(err);
-            }
+        if (err) {
+            return next(err);
+        }
 
-            req.subjects = subjects;
-            next();
-        });
+        req.subjects = subjects;
+        next();
+    });
 }
 
-function querySubjects(req) {
+function querySubjects(req, userId) {
 
     let query = subject.find();
+    query = query.where('userId').equals(userId);
 
-    if (Array.isArray(req.query.userId)) {
-        const users = req.query.userId.filter(ObjectId.isValid);
-        query = query.where('userId').in(users);
-    } else if (ObjectId.isValid(req.query.userId)) {
-        query = query.where('userId').equals(req.query.userId);
-    }
     if (!isNaN(req.query.rating)) {
         query = query.where('rating').equals(req.query.rating);
     }
@@ -121,7 +114,6 @@ function querySubjects(req) {
     }
     if (!isNaN(req.query.ratedAtMost)) {
         query = query.where('rating').lte(req.query.ratedAtMost);
-    }
-
+    }ß
     return query;
 }
