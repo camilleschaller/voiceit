@@ -1,4 +1,4 @@
-const debug = require('debug')('demo:movies');
+const debug = require('debug')('demo:note');
 const note = require('../models/noteSchema');
 const utils = require('../utils.js');
 

@@ -1,4 +1,4 @@
-const debug = require('debug')('demo:movies');
+const debug = require('debug')('demo:user');
 const user = require('../models/userSchema');
 const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
