@@ -24,7 +24,7 @@ const subjectSchema = new Schema({
   },
   userId: {
     type: Schema.Types.ObjectId,
-    ref: 'User',
+    ref: 'user',
     default: null,
     required: true,
     validate: {
@@ -57,7 +57,7 @@ function validateUser(value) {
     throw new Error('user not found');
   }
 
-  return mongoose.model('User').findOne({ _id: ObjectId(value) }).exec().then(user => {
+  return mongoose.model('user').findOne({ _id: ObjectId(value) }).exec().then(user => {
     if (!user) {
       throw new Error('user not found');
     }

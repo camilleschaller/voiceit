@@ -1,9 +1,27 @@
 const debug = require('debug')('demo:movies');
 const note = require('../models/noteSchema');
+const utils = require('../utils.js');
+
 const mongoose = require('mongoose');
 const ObjectId = mongoose.Types.ObjectId;
 
 exports.createNote = function (req, res, next) {
+
+    // BUGFIX: validate ObjectId reference before attempting to save. This is to
+    // avoid a Mongoose issue where casting fails before custom validation can be
+    // applied: https://github.com/Automattic/mongoose/issues/8300
+    if (req.body.subjectId && !ObjectId.isValid(req.body.subjectId)) {
+        return res.status(422).send({
+            message: 'Subject validation failed: subjectId: subject not found',
+            errors: {
+                subjectId: {
+                    message: 'subject not found',
+                    path: 'subjectId',
+                    value: req.body.subjectId
+                }
+            }
+        });
+    }
 
     const newNote = new note(req.body);
     newNote.save(function (err, savedNote) {
@@ -19,7 +37,7 @@ exports.createNote = function (req, res, next) {
 }
 
 exports.listNotes = function (req, res, next) {
-    // Count total movies matching the URL query parameters
+    // Count total notes matching the URL query parameters
     const countQuery = queryNotes(req);
     countQuery.count(function (err, total) {
 
@@ -84,7 +102,6 @@ exports.loadNotesFromParamsMiddleware = function (req, res, next) {
         if (err) {
             return next(err);
         }
-
         req.notes = notes;
         next();
     });
@@ -96,7 +113,7 @@ exports.loadNotesFromParamsMiddleware = function (req, res, next) {
 
 function queryNotes(req) {
 
-    let query = Note.find();
+    let query = note.find();
 
     if (Array.isArray(req.query.subjectId)) {
         const subjects = req.query.subjectId.filter(ObjectId.isValid);

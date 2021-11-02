@@ -23,7 +23,7 @@ const noteSchema = new Schema({
   },
   subjectId: {
     type: Schema.Types.ObjectId,
-    ref: 'Subject',
+    ref: 'subject',
     default: null,
     required: true,
     validate: {
@@ -56,7 +56,7 @@ const noteSchema = new Schema({
     throw new Error('subject not found');
   }
 
-  return mongoose.model('Subject').findOne({ _id: ObjectId(value) }).exec().then(subject => {
+  return mongoose.model('subject').findOne({ _id: ObjectId(value) }).exec().then(subject => {
     if (!subject) {
       throw new Error('subject not found');
     }
