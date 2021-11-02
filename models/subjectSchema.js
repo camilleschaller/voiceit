@@ -21,6 +21,18 @@ const subjectSchema = new Schema({
     type: String,
     required: false,
     maxlength: 100,
+  },
+  userId: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    default: null,
+    required: true,
+    validate: {
+      // Validate that the directorId is a valid ObjectId
+      // and references an existing person
+      validator: validateUser,
+      message: props => props.reason.message
+    }
   }
 });
 
@@ -33,5 +45,25 @@ const subjectSchema = new Schema({
       return !existingSubject || existingSubject._id.equals(this._id);
     });
   }
+
+ /**
+ * Given a user ID, ensures that it references an existing user.
+ *
+ * If it's not the case or the ID is missing or not a valid object ID,
+ * the "userId" property is invalidated.
+ */
+function validateUser(value) {
+  if (!ObjectId.isValid(value)) {
+    throw new Error('user not found');
+  }
+
+  return mongoose.model('User').findOne({ _id: ObjectId(value) }).exec().then(user => {
+    if (!user) {
+      throw new Error('user not found');
+    }
+
+    return true;
+  });
+}
 
 module.exports = mongoose.model('subject', subjectSchema);
