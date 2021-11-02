@@ -21,6 +21,10 @@ const noteSchema = new Schema({
     type: String,
     required: false,
   },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
   subjectId: {
     type: Schema.Types.ObjectId,
     ref: 'subject',
