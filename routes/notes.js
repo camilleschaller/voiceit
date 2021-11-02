@@ -1,4 +1,4 @@
-var NotesController = require('../http/notesController');
+var NotesController = require('../http/noteController');
 var express = require('express');
 const utils = require('../utils.js');
 const mongoose = require('mongoose');
@@ -7,7 +7,7 @@ var notesRouter = express.Router();
 const ObjectId = mongoose.Types.ObjectId;
 
 /* GET notes listing. */
-notesRouter.get('/:id', NotesController.loadNotesFromParamsMiddleware, NotesController.listNotes);
+notesRouter.get('/', NotesController.loadNotesFromParamsMiddleware, NotesController.listNotes);
 
 /* POST notes creating. */
 notesRouter.post('/', NotesController.createNote);

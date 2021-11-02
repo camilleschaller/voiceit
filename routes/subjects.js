@@ -7,7 +7,7 @@ var subjectsRouter = express.Router();
 const ObjectId = mongoose.Types.ObjectId;
 
 /* GET subjects listing. */
-subjectsRouter.get('/:id', SubjectController.loadSubjectsFromParamsMiddleware, SubjectController.listSubjects);
+subjectsRouter.get('/', SubjectController.loadSubjectsFromParamsMiddleware, SubjectController.listSubjects);
 
 /* POST subjects creating. */
 subjectsRouter.post('/', SubjectController.createSubject);

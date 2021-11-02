@@ -5,14 +5,8 @@ const ObjectId = mongoose.Types.ObjectId;
 
 exports.createSubject = function (req, res, next) {
 
-        if (err) {
-            return next(err);
-        }
         const newSubject = new subject(req.body);
         newSubject.save(function (err, savedSubject) {
-            if (err) {
-                return next(err);
-            }
 
             debug(`Created subject "${savedSubject.title}"`);
 
@@ -32,14 +26,9 @@ exports.modifySubject = function (req, res, next) {
     req.subject.title = req.body.title;
     req.subject.description = req.body.description;
 
-        if (err) {
-            return next(err);
-        }
         const subjectModified = req.subject;
         subjectModified.save(function (err, savedSubject) {
-            if (err) {
-                return next(err);
-            }
+
             debug(`Updated subject "${savedSubject.title}"`);
             res.send(savedSubject);
         });
@@ -47,28 +36,21 @@ exports.modifySubject = function (req, res, next) {
 
 exports.deleteSubject = function (req, res, next) {
     req.subject.remove(function (err) {
-        if (err) {
-            return next(err);
-        }
+        
         debug(`Deleted subject "${req.subject.title}"`);
         res.sendStatus(204);
     });
 }
 
 exports.loadSubjectsFromParamsMiddleware = function (req, res, next) {
-    const subjectId = req.params.id;
-    if (!ObjectId.isValid(subjectId)) {
-        return subjectNotFound(res, subjectId);
-    }
-    subject.findById(req.params.id, function (err, subject) {
-        if (err) {
-            return next(err);
-        } else if (!subject) {
-            return subjectNotFound(res, subjectId);
-        }
-        req.subject = subject;
-        next();
-    });
+    subject.find(function (err, subjects) {
+            if (err) {
+                return next(err);
+            }
+
+            req.subjects = subjects;
+            next();
+        });
 }
 
 function subjectNotFound(res, subjectId) {

@@ -1,49 +1,72 @@
 const debug = require('debug')('demo:movies');
-const note = require('../models/notestSchema');
+const note = require('../models/noteSchema');
 const mongoose = require('mongoose');
 const ObjectId = mongoose.Types.ObjectId;
 
 exports.createNote = function (req, res, next) {
 
-        if (err) {
-            return next(err);
-        }
-        const newNote = new note(req.body);
-        newNote.save(function (err, savedNote) {
-            if (err) {
-                return next(err);
-            }
+    const newNote = new note(req.body);
+    newNote.save(function (err, savedNote) {
 
-            debug(`Created note "${savedNote.title}"`);
+        debug(`Created note "${savedNote.title}"`);
 
-            res
-                .status(201)
-                //.set('Location', `${config.baseUrl}/api/notes/${savedNote._id}`)
-                .set('Location', `${'localhost:3000'}/api/notes/${savedNote._id}`)
-                .send(savedNote);
-        });
+        res
+            .status(201)
+            //.set('Location', `${config.baseUrl}/api/notes/${savedNote._id}`)
+            .set('Location', `${'localhost:3000'}/api/notes/${savedNote._id}`)
+            .send(savedNote);
+    });
 }
 
 exports.listNotes = function (req, res, next) {
-    res.send(req.note);
+    // Count total movies matching the URL query parameters
+    const countQuery = queryNotes(req);
+    countQuery.count(function (err, total) {
+
+        if (err) {
+            return next(err);
+        }
+
+        // Prepare the initial database query from the URL query parameters
+        let query = queryNotes(req);
+
+        // Parse pagination parameters from URL query parameters
+        const { page, pageSize } = utils.getPaginationParameters(req);
+
+        // Apply the pagination to the database query
+        query = query.skip((page - 1) * pageSize).limit(pageSize);
+
+        // Add the Link header to the response
+        utils.addLinkHeader('/api/notes', page, pageSize, total, res);
+
+        // Populate the directorId if indicated in the "include" URL query parameter
+        if (utils.responseShouldInclude(req, 'subject')) {
+            query = query.populate('subjectId');
+        }
+
+        // Execute the query
+        query.sort({ title: 1 }).exec(function (err, notes) {
+            if (err) {
+                return next(err);
+            }
+            res.send(notes);
+        });
+    });
 }
 
 exports.modifyNote = function (req, res, next) {
     req.note.title = req.body.title;
     req.note.text = req.body.text;
-    req.note.subject = re.body.subject;
+    req.note.subject = req.body.subject;
 
+    const noteModified = req.note;
+    noteModified.save(function (err, savedNote) {
         if (err) {
             return next(err);
         }
-        const noteModified = req.note;
-        noteModified.save(function (err, savedNote) {
-            if (err) {
-                return next(err);
-            }
-            debug(`Updated note "${savedNote.title}"`);
-            res.send(savedNote);
-        });
+        debug(`Updated note "${savedNote.title}"`);
+        res.send(savedNote);
+    });
 }
 
 exports.deleteNote = function (req, res, next) {
@@ -57,21 +80,39 @@ exports.deleteNote = function (req, res, next) {
 }
 
 exports.loadNotesFromParamsMiddleware = function (req, res, next) {
-    const noteId = req.params.id;
-    if (!ObjectId.isValid(noteId)) {
-        return noteNotFound(res, noteId);
-    }
-    note.findById(req.params.id, function (err, note) {
+    note.find(function (err, notes) {
         if (err) {
             return next(err);
-        } else if (!note) {
-            return noteNotFound(res, noteId);
         }
-        req.note = note;
+
+        req.notes = notes;
         next();
     });
 }
 
-function noteNotFound(res, noteId) {
-    return res.status(404).type('text').send(`No note found with ID ${noteId}`);
+/**
+* Returns a Mongoose query that will retrieve movies filtered with the URL query parameters.
+*/
+
+function queryNotes(req) {
+
+    let query = Note.find();
+
+    if (Array.isArray(req.query.subjectId)) {
+        const subjects = req.query.subjectId.filter(ObjectId.isValid);
+        query = query.where('subjectId').in(subjects);
+    } else if (ObjectId.isValid(req.query.subjectId)) {
+        query = query.where('subjectId').equals(req.query.subjectId);
+    }
+    if (!isNaN(req.query.rating)) {
+        query = query.where('rating').equals(req.query.rating);
+    }
+    if (!isNaN(req.query.ratedAtLeast)) {
+        query = query.where('rating').gte(req.query.ratedAtLeast);
+    }
+    if (!isNaN(req.query.ratedAtMost)) {
+        query = query.where('rating').lte(req.query.ratedAtMost);
+    }
+
+    return query;
 }
