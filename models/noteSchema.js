@@ -20,6 +20,18 @@ const noteSchema = new Schema({
   text: {
     type: String,
     required: false,
+  },
+  subjectId: {
+    type: Schema.Types.ObjectId,
+    ref: 'Subject',
+    default: null,
+    required: true,
+    validate: {
+      // Validate that the subjectId is a valid subjectId
+      // and references an existing person
+      validator: validateSubject,
+      message: props => props.reason.message
+    }
   }
 });
 
@@ -32,5 +44,25 @@ const noteSchema = new Schema({
       return !existingNote || existingNote._id.equals(this._id);
     });
   }
+
+/**
+ * Given a subject ID, ensures that it references an existing subject.
+ *
+ * If it's not the case or the ID is missing or not a valid object ID,
+ * the "subjectId" property is invalidated.
+ */
+ function validateSubject(value) {
+  if (!ObjectId.isValid(value)) {
+    throw new Error('subject not found');
+  }
+
+  return mongoose.model('Subject').findOne({ _id: ObjectId(value) }).exec().then(subject => {
+    if (!subject) {
+      throw new Error('subject not found');
+    }
+
+    return true;
+  });
+}  
 
 module.exports = mongoose.model('note', noteSchema);
