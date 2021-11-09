@@ -1,6 +1,5 @@
 const debug = require('debug')('my-app:messaging');
 const WebSocket = require('ws');
-const ws = new WebSocket('ws://localhost:3000');
 
 // Array of currently connected WebSocket clients.
 const clients = [];
@@ -36,16 +35,11 @@ exports.createWebSocketServer = function (httpServer) {
 // Broadcast a message to all connected clients.
 exports.broadcastMessage = function (message) {
   debug(`Broadcasting message to all connected clients: ${JSON.stringify(message)}`);
-  // Wait for the connection to open.
-  ws.addEventListener('open', function (event) {
-    // Send something to the server.
-    ws.send('Hello Server!');
-  });
 
-  // Listen for message from the server.
-  ws.addEventListener('message', function (event) {
-    console.log('Message from server ', event.data);
-  });
+  for(const client of clients){
+    client.send(JSON.stringify(message));
+  }
+
 };
 
 function onMessageReceived(ws, message) {

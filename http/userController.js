@@ -28,9 +28,10 @@ exports.createUser = function (req, res, next) {
                 //.set('Location', `${config.baseUrl}/api/users/${savedUser._id}`)
                 .set('Location', `${'localhost:3000'}/api/users/${savedUser._id}`)
                 .send(savedUser);
+
+            broadcastMessage(`Un.e nouvel.le utilisateur.trice nommé.e ${savedUser.pseudo} nous a rejoint.`);
         });
     });
-    broadcastMessage({ hello: 'world' });
 }
 
 exports.listUser = function (req, res, next) {
