@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const ObjectId = mongoose.Types.ObjectId;
 const config = require('../config.js');
 const jwt = require('jsonwebtoken');
+const { broadcastMessage } = require('../messaging');
 
 exports.createUser = function (req, res, next) {
     const plainPassword = req.body.password;
@@ -29,6 +30,7 @@ exports.createUser = function (req, res, next) {
                 .send(savedUser);
         });
     });
+    broadcastMessage({ hello: 'world' });
 }
 
 exports.listUser = function (req, res, next) {

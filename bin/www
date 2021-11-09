@@ -26,7 +26,6 @@ var server = http.createServer(app);
 /**
  * Create HTTP & WebSocket servers.
  */
- const server = http.createServer(app); // this line is already there
  createWebSocketServer(server);
 
 /**
