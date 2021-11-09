@@ -73,34 +73,103 @@ exports.listNotes = function (req, res, next) {
                 return next(err);
             }
 
+
             // Prepare the initial database query from the URL query parameters
             let query = queryNotes(req, subject);
 
             // Parse pagination parameters from URL query parameters
             const { page, pageSize } = utils.getPaginationParameters(req);
 
-            // Apply the pagination to the database query
-            query = query.skip((page - 1) * pageSize).limit(pageSize);
-
-            // Add the Link header to the response
-            utils.addLinkHeader('/api/notes', page, pageSize, total, res);
-
-            // Populate the directorId if indicated in the "include" URL query parameter
-            if (utils.responseShouldInclude(req, 'subject')) {
-                query = query.populate('subjectId');
-            }
-
-            // Execute the query
-            query.sort({ title: 1 }).exec(function (err, notes) {
+            note.aggregate([
+                {
+                    $lookup: {
+                        from: 'subjects',
+                        localField: '_id',
+                        foreignField: 'subjectId',
+                        as: 'linkedNotes'
+                    }
+                },
+                {
+                    $unwind: {
+                        path: '$linkedNotes',
+                        // Preserve subjects who have not linked notes
+                        // ("linkedNotes" will be null).
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+                // Replace "linkedNotes" by 1 when set, or by 0 when null.
+                {
+                    $addFields: {
+                        linkedNotes: {
+                            $cond: {
+                                if: '$linkedNotes',
+                                then: 1,
+                                else: 0
+                            }
+                        }
+                    }
+                },
+                {
+                    $group: {
+                        _id: '$_id',
+                        linkedNotes: { $sum: '$linkedNotes' },
+                        userId: { $first: '$userId' },
+                        description: { $first: '$description' },
+                        title: { $first: '$title' }
+                    }
+                },
+                {
+                    $sort: {
+                        title: 1
+                    }
+                },
+                {
+                    $skip: (page - 1) * pageSize
+                },
+                {
+                    $limit: pageSize
+                }
+            ], (err, notes) => {
                 if (err) {
                     return next(err);
                 }
-                res.send(notes);
-            });
-        });
 
-    });
-}
+                utils.addLinkHeader('/api/notes', page, pageSize, total, res);
+
+                res.send(notes.map(note => {
+
+                    // Transform the aggregated object into a Mongoose model.
+                    const serialized = new note(note).toJSON();
+
+                    // Add the aggregated property.
+                    serialized.linkedNotes = note.linkedNotes;
+
+                    return serialized;
+                }));
+
+                // Apply the pagination to the database query
+                //query = query.skip((page - 1) * pageSize).limit(pageSize);
+
+                // Add the Link header to the response
+                //utils.addLinkHeader('/api/notes', page, pageSize, total, res);
+
+                // Populate the directorId if indicated in the "include" URL query parameter
+                //if (utils.responseShouldInclude(req, 'subject')) {
+                //  query = query.populate('subjectId');
+                //}
+
+                // Execute the query
+                //query.sort({ title: 1 }).exec(function (err, notes) {
+                //  if (err) {
+                //    return next(err);
+                //}
+                //res.send(notes);
+                //});
+            });
+
+        })
+    })
+};
 
 exports.modifyNote = function (req, res, next) {
     req.note.title = req.body.title;
