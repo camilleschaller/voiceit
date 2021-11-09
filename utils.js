@@ -1,7 +1,8 @@
-const { authToken, databaseUrl, secretKey } = require('./config.js');
+const config = require('./config.js');
 
 const formatLinkHeader = require('format-link-header');
 const User = require('./models/userSchema');
+const jwt = require('jsonwebtoken');
 
 exports.requireJson = function (req, res, next) {
     if (req.is('application/json')) {

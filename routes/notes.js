@@ -7,15 +7,15 @@ var notesRouter = express.Router();
 const ObjectId = mongoose.Types.ObjectId;
 
 /* GET notes listing. */
-notesRouter.get('/', NotesController.loadNotesFromParamsMiddleware, NotesController.listNotes);
+notesRouter.get('/', utils.authenticate, NotesController.loadNotesFromParamsMiddleware, NotesController.listNotes);
 
 /* POST notes creating. */
-notesRouter.post('/', NotesController.createNote);
+notesRouter.post('/', utils.authenticate, NotesController.createNote);
 
 /* PUT notes modifying. */
-notesRouter.put('/:id', utils.requireJson, NotesController.loadNotesFromParamsMiddleware, NotesController.modifyNote);
+notesRouter.put('/:id', utils.authenticate, utils.requireJson, NotesController.loadNotesFromParamsMiddleware, NotesController.modifyNote);
 
 /* DELETE notes deleting. */
-notesRouter.delete('/:id', NotesController.loadNotesFromParamsMiddleware, NotesController.deleteNote);
+notesRouter.delete('/:id', utils.authenticate, NotesController.loadNotesFromParamsMiddleware, NotesController.deleteNote);
 
 module.exports = notesRouter;

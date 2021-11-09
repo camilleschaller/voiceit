@@ -54,14 +54,16 @@ exports.listNotes = function (req, res, next) {
 
     }
 
-    subject.findById(req.params.id, function (err, subject) {
+    subject.findById(req.query.subjectId, function (err, subject) {
         if (err) {
             return next(err);
         } else if (!subject) {
-            return userNotFound(res, subjectId);
+            return userNotFound(res, subject);
         }
 
-        if (req.currentUserId !== thing.user.toString()) {
+        if (req.currentUserId !== subject.userId.toString()) {
+            console.log(req.currentUserId);
+            console.log(subject.userId);
             return res.status(403).send('Please mind your own things.')
         }
 
@@ -81,6 +83,11 @@ exports.listNotes = function (req, res, next) {
             const { page, pageSize } = utils.getPaginationParameters(req);
 
             note.aggregate([
+                {
+                    $match: {
+                        subjectId: ObjectId(req.query.subjectId)
+                    }
+                },
                 {
                     $lookup: {
                         from: 'subjects',
@@ -136,13 +143,13 @@ exports.listNotes = function (req, res, next) {
 
                 utils.addLinkHeader('/api/notes', page, pageSize, total, res);
 
-                res.send(notes.map(note => {
+                res.send(notes.map(dataNote => {
 
                     // Transform the aggregated object into a Mongoose model.
-                    const serialized = new note(note).toJSON();
+                    const serialized = new note(dataNote).toJSON();
 
                     // Add the aggregated property.
-                    serialized.linkedNotes = note.linkedNotes;
+                    serialized.linkedNotes = dataNote.linkedNotes;
 
                     return serialized;
                 }));

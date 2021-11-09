@@ -47,11 +47,11 @@ const noteSchema = new Schema({
  * Given a note, calls the callback function with true if no note exists with that title
  * (or the only note that exists is the same as the note being validated).
  */
- function validateNoteTitleUniqueness(value) {
-    return this.constructor.findOne().where('title').equals(value).exec().then((existingNote) => {
-      return !existingNote || existingNote._id.equals(this._id);
-    });
-  }
+function validateNoteTitleUniqueness(value) {
+  return this.constructor.findOne().where('title').equals(value).exec().then((existingNote) => {
+    return !existingNote || existingNote._id.equals(this._id);
+  });
+}
 
 /**
  * Given a subject ID, ensures that it references an existing subject.
@@ -59,7 +59,7 @@ const noteSchema = new Schema({
  * If it's not the case or the ID is missing or not a valid object ID,
  * the "subjectId" property is invalidated.
  */
- function validateSubject(value) {
+function validateSubject(value) {
   if (!ObjectId.isValid(value)) {
     throw new Error('subject not found');
   }
@@ -71,6 +71,23 @@ const noteSchema = new Schema({
 
     return true;
   });
-}  
+}
+
+/**
+* Removes extra MongoDB properties from serialized notes,
+* and includes the subject's data if it has been populated.
+*/
+function transformJsonNote(doc, json, options) {
+  // Remove MongoDB _id & __v (there's a default virtual "id" property)
+  delete json._id;
+  delete json.__v;
+
+  if (!(json.subjectId instanceof ObjectId)) {
+    // If the director was populated, include it in the serialization
+    json.subject = doc.subjectId.toJSON();
+    json.subjectId = doc.subjectId._id;
+  }
+  return json;
+}
 
 module.exports = mongoose.model('note', noteSchema);
