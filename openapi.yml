@@ -44,6 +44,20 @@ paths:
                 $ref: '#/components/schemas/User'
         422:
           $ref: '#/components/responses/UserValidationError'
+    put:
+      summary: Modify a user.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserInRequestBody'
+      responses:
+        201:
+          description: The User was successfully modified.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
     delete:
       summary: Delete a user.
       requestBody:
@@ -75,23 +89,51 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Person'
+                  $ref: '#/components/schemas/subject'
     post:
       summary: Create a subject.
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserInRequestBody'
+              $ref: '#/components/schemas/SubjectInRequestBody'
       responses:
         201:
-          description: The person was successfully created.
+          description: The subject was successfully created.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Person'
+                $ref: '#/components/schemas/subject'
         422:
-          $ref: '#/components/responses/UserValidationError'
+          $ref: '#/components/responses/SubjectValidationError'
+    put:
+      summary: Modify a subject.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubjectInRequestBody'
+      responses:
+        201:
+          description: The subject was successfully modified.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subject'
+    delete:
+      summary: Delete a subject.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubjectInRequestBody'
+      responses:
+        201:
+          description: The Subject was successfully deleted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subject'
   /notes:
     get:
       summary: List notes.
@@ -115,7 +157,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserInRequestBody'
+              $ref: '#/components/schemas/NoteInRequestBody'
       responses:
         201:
           description: The Note was successfully created.
@@ -123,7 +165,34 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Note'
-
+    put:
+      summary: Modify a note.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NoteInRequestBody'
+      responses:
+        201:
+          description: The note was successfully modified.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/note'
+    delete:
+      summary: Delete a note.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NoteInRequestBody'
+      responses:
+        201:
+          description: The note was successfully deleted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Note'
 components:
   headers:
     PaginationLink:
@@ -131,7 +200,7 @@ components:
       schema:
         type: string
       example: >-
-        <https://comem-rest-demo.herokuapp.com/api/people?page=1&pageSize=50>; rel="first prev"
+        <https://projet-voiceit.herokuapp.com/api/notes?page=1&pageSize=5>; rel="first prev"
   parameters:
     page:
       name: page
@@ -146,8 +215,8 @@ components:
       schema:
         type: integer
         min: 1
-        max: 10
-      example: 7
+        max: 5
+      example: 2
   responses:
     UserNotFoundError:
       description: The user does not exist.
@@ -204,56 +273,47 @@ components:
     Subject:
       type: object
       properties:
-        name:
+        title:
           type: string
-          description: The name of the person (must be unique).
-          minlength: 3
-          maxlength: 30
-          example: John Doe
-        gender:
+          description: The title of the subject (must be unique).
+          minlength: 1
+          maxlength: 20
+          example: Mathematics
+        title:
           type: string
-          description: The gender of the person.
-          enum:
-            - male
-            - female
-            - other
-          example: male
-        birthDate:
-          type: string
-          description: >-
-            The birth date of the person
-            ([ISO-8601](https://en.wikipedia.org/wiki/ISO_8601) format).
-          format: date-time
-          example: '2001-02-03T08:30:00.000Z'
+          description: The description of the subject
+          maxlength: 100
+          example: This subject includes mathematics.
+        userId:
+          type: Schema.Types.ObjectId
+          description: The id of the person linked.
       required:
-        - name
-        - gender
+        - title
+        - userId
       additionalProperties: false
     Note:
       type: object
       properties:
-        name:
+        title:
           type: string
-          description: The name of the person (must be unique).
-          minlength: 3
-          maxlength: 30
-          example: John Doe
-        gender:
-          type: string
-          description: The gender of the person.
-          enum:
-            - male
-            - female
-            - other
-          example: male
-        birthDate:
-          type: string
-          description: >-
-            The birth date of the person
-            ([ISO-8601](https://en.wikipedia.org/wiki/ISO_8601) format).
-          format: date-time
-          example: '2001-02-03T08:30:00.000Z'
+          description: The title of the note (must be unique).
+          minlength: 1
+          maxlength: 20
+          example: Algebra 2
+        text:
+          type: String
+          description: The content of the note.
+        imageURL:
+          type: String
+          description: The image URL of the note.
+        createdAt:
+          type: Date
+          description: When was the note created.
+        subectId:
+          type: Schema.Types.ObjectId
+          description: The id of the subject linked.
       required:
-        - name
-        - gender
+        - title
+        - createdAt
+        - subjectId
       additionalProperties: false
