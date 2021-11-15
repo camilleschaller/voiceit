@@ -1,7 +1,12 @@
 const { expect } = require('chai');
-const supertest = require('supertest');
 const app = require('../app');
 const mongoose = require('mongoose');
+const config = require('../config.js');
+const supertest = require('supertest');
+
+mongoose.connect(config.databaseUrl, {
+    useCreateIndex: true
+});
 
 describe('POST /users', function () {
     it('should create a user', async function () {
