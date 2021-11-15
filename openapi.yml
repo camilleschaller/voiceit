@@ -279,7 +279,7 @@ components:
           minlength: 1
           maxlength: 20
           example: Mathematics
-        title:
+        description:
           type: string
           description: The description of the subject
           maxlength: 100
